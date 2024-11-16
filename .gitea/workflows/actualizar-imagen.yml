@@ -11,8 +11,8 @@ on:
       - 'script_inicio.sh'
       
   schedule:
-    - cron: "*/5 * * * *"  # Ejecuta cada 5 min para pruebas
-#    - cron: "29 2 * * *"  # Ejecuta todos los días a las 02:29h
+#    - cron: "*/5 * * * *"  # Ejecuta cada 5 min para pruebas
+    - cron: "29 2 * * *"  # Ejecuta todos los días a las 02:29h
 
 jobs:
   "Actualización de imagen":
