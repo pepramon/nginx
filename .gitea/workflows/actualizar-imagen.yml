@@ -11,8 +11,8 @@ on:
       - 'script_inicio.sh'
       
   schedule:
-    - cron: "*/5 * * * *"  # Ejecuta cada 5 min para pruebas
-#    - cron: "29 2 * * *"  # Ejecuta todos los días a las 02:29h
+#    - cron: "*/5 * * * *"  # Ejecuta cada 5 min para pruebas
+    - cron: "29 2 * * *"  # Ejecuta todos los días a las 02:29h
 
 jobs:
   "Actualización de imagen":
@@ -52,19 +52,19 @@ jobs:
             echo "construir=true" >> $GITHUB_ENV
           fi
       
-      - name: Comprobar actualizaciones de Debian (SO del contenedor)
-        if: env.construir != 'true'
-        run: |
-          echo "Comprobando actualizaciones de Debian"
-          salida=$(podman run $IMAGEN_DEST bash -c "apt update > /dev/null 2>&1 && apt list --upgradable 2>/dev/null | grep -v 'Listing' | wc -l")
-          nactualizaciones= head -n 1 $salida
-          echo "Hay $nactualizaciones de Debian"
-          if [ "$nactualizaciones" -gt 0 ]; then
-            echo "Actualizaciones disponibles en Debian. Hay que construir imagen"
-            echo "construir=true" >> $GITHUB_ENV
-          else
-            echo "No hay actualizaciones disponibles de Debian."
-          fi
+#      - name: Comprobar actualizaciones de Debian (SO del contenedor)
+#        if: env.construir != 'true'
+#        run: |
+#          echo "Comprobando actualizaciones de Debian"
+#          salida=$(podman run $IMAGEN_DEST bash -c "apt update > /dev/null 2>&1 && apt list --upgradable 2>/dev/null | grep -v 'Listing' | wc -l")
+#          nactualizaciones= head -n 1 $salida
+#          echo "Hay $nactualizaciones de Debian"
+#          if [ "$nactualizaciones" -gt 0 ]; then
+#            echo "Actualizaciones disponibles en Debian. Hay que construir imagen"
+#            echo "construir=true" >> $GITHUB_ENV
+#          else
+#            echo "No hay actualizaciones disponibles de Debian."
+#          fi
           
       - name: Checkout repositorio
         if: env.construir == 'true'
