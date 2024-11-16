@@ -56,7 +56,7 @@ jobs:
         if: env.construir != 'true'
         run: |
           echo "Comprobando actualizaciones de Debian"
-          salida=$(docker run $IMAGEN_DEST bash -c "apt update > /dev/null 2>&1 && apt list --upgradable 2>/dev/null | grep -v 'Listing' | wc -l")
+          salida=$(podman run $IMAGEN_DEST bash -c "apt update > /dev/null 2>&1 && apt list --upgradable 2>/dev/null | grep -v 'Listing' | wc -l")
           nactualizaciones= head -n 1 $salida
           echo "Hay $nactualizaciones de Debian"
           if [ "$nactualizaciones" -gt 0 ]; then
