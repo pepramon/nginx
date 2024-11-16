@@ -1,0 +1,94 @@
+name: Crear nueva imagen al actualizar
+run-name: Se crea nueva imagen y se sube a dockerhub
+on:
+  push:
+    branches:
+      - main
+      
+    # Solo se lanza la acción si cambia el Dockerfile o script de incio
+    paths:
+      - 'Dockerfile'
+      - 'script_inicio.sh'
+      
+  schedule:
+    - cron: "*/5 * * * *"  # Ejecuta cada 5 min para pruebas
+#    - cron: "29 2 * * *"  # Ejecuta todos los días a las 02:29h
+
+jobs:
+  "Actualización de imagen":
+    runs-on: custom
+    env:
+      IMAGEN_BASE: 'docker.io/library/nginx:stable'
+      IMAGEN_DEST: 'docker.io/pepramon/nginx:latest'
+    steps:
+      - name: Comprobar si es un push
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "Es un push real. Se debe construir la imagen."
+            echo "construir=true" >> $GITHUB_ENV
+          else
+            echo "No es un push. Continuando con las verificaciones cambio imagen o actualizaciones."
+          fi
+
+      - name: Comprobando si imagen base ha cambiado
+        if: env.construir != 'true'
+        run: |
+          echo "Realizando pull de las imagenes para comprobar si hay cambios"
+          podman pull $IMAGEN_BASE
+          podman pull $IMAGEN_DEST
+          # Se guarda que se ha hecho pull
+          echo "pullEcho=true" >> $GITHUB_ENV
+          
+          # Se obtiene el sha de la imagen base
+          base=$(podman inspect $IMAGEN_BASE --format '{{index .RepoDigests 0}}' | awk -F'@' '{print $2}')
+          # Se obtiene el guardado en la imagen construida
+          imagen=$(podman inspect $IMAGEN_DEST --format '{{ index .Config.Labels "base_digest" }}')
+          
+          # Comprobación de si ha cambiado o no
+          if [ "$base" == "$imagen" ]; then
+            echo "La imagen base no ha cambiado."
+          else
+            echo "La imagen base ha cambiado. Hay que reconstruir la imagen derivada."
+            echo "construir=true" >> $GITHUB_ENV
+          fi
+      
+      - name: Comprobar actualizaciones de Debian (SO del contenedor)
+        if: env.construir != 'true'
+        run: |
+          echo "Comprobando actualizaciones de Debian"
+          salida=$(docker run $IMAGEN_DEST bash -c "apt update > /dev/null 2>&1 && apt list --upgradable 2>/dev/null | grep -v 'Listing' | wc -l")
+          nactualizaciones= head -n 1 $salida
+          echo "Hay $nactualizaciones de Debian"
+          if [ "$nactualizaciones" -gt 0 ]; then
+            echo "Actualizaciones disponibles en Debian. Hay que construir imagen"
+            echo "construir=true" >> $GITHUB_ENV
+          else
+            echo "No hay actualizaciones disponibles de Debian."
+          fi
+          
+      - name: Checkout repositorio
+        if: env.construir == 'true'
+        uses: http://gitea:3000/acciones/checkout@v1
+        
+      - name: Hacer pull imagen base
+        if: ${{ env.pullEcho != 'true' && env.construir == 'true' }}
+        run: |
+          echo "Haciendo pull de $IMAGEN_BASE"
+          podman pull $IMAGEN_BASE
+          
+      - name: Se construye la imagen
+        if: env.construir == 'true'
+        run: |
+          # Obtén el digest de la imagen base 
+          base_digest=$(podman inspect $IMAGEN_BASE --format '{{index .RepoDigests 0}}' | awk -F'@' '{print $2}')
+          
+          # Construcción de la imagen
+          podman build -t $IMAGEN_DEST --label base_digest="$base_digest" .
+          
+      - name: Logeo en dockerhub
+        if: env.construir == 'true'
+        run: podman login -u pepramon -p ${{ secrets.DOCKERHUB }} docker.io
+        
+      - name: Se sube la imagen
+        if: env.construir == 'true'
+        run: podman push $IMAGEN_DEST
