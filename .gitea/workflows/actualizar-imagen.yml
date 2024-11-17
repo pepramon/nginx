@@ -7,6 +7,7 @@ on:
       
     # No se ejecuta la acción si se cambia el README.md
     paths:
+      - '**/*'          # Todos los archivos del repositorio
       - '!README.md'
       
   schedule:
