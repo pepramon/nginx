@@ -5,10 +5,9 @@ on:
     branches:
       - main
       
-    # Solo se lanza la acción si cambia el Dockerfile o script de incio
+    # No se ejecuta la acción si se cambia el README.md
     paths:
-      - 'Dockerfile'
-      - 'script_inicio.sh'
+      - '!README.md
       
   schedule:
 #    - cron: "*/5 * * * *"  # Ejecuta cada 5 min para pruebas
