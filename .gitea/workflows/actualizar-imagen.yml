@@ -29,13 +29,29 @@ jobs:
           else
             echo "No es un push. Continuando con las verificaciones cambio imagen o actualizaciones."
           fi
+          
+      - name: Comprobar actualizaciones de Debian (SO del contenedor)
+        if: env.construir != 'true'
+        run: |
+          echo "Comprobando actualizaciones de Debian. Bajando imagen"
+          podman pull $IMAGEN_DEST
+          
+          comando="apt update > /dev/null 2>&1 && apt list --upgradable 2>/dev/null | grep -v 'Listing' | wc -l"
+          paquetes_actualizar=$(podman run --entrypoint "" $IMAGEN_DEST bash -c "$comando")
+          echo "Hay $paquetes_actualizar paquetes por actualizar de Debian"
+          if [ "$paquetes_actualizar" -gt 0 ]; then
+            echo "Actualizaciones disponibles en Debian. Hay que construir imagen"
+            echo "construir=true" >> $GITHUB_ENV
+          else
+            echo "No hay actualizaciones disponibles de Debian."
+          fi
 
       - name: Comprobando si imagen base ha cambiado
         if: env.construir != 'true'
         run: |
           echo "Realizando pull de las imagenes para comprobar si hay cambios"
           podman pull $IMAGEN_BASE
-          podman pull $IMAGEN_DEST
+
           # Se guarda que se ha hecho pull
           echo "pullEcho=true" >> $GITHUB_ENV
           
@@ -50,20 +66,6 @@ jobs:
           else
             echo "La imagen base ha cambiado. Hay que reconstruir la imagen derivada."
             echo "construir=true" >> $GITHUB_ENV
-          fi
-      
-      - name: Comprobar actualizaciones de Debian (SO del contenedor)
-        if: env.construir != 'true'
-        run: |
-          echo "Comprobando actualizaciones de Debian"
-          comando="apt update > /dev/null 2>&1 && apt list --upgradable 2>/dev/null | grep -v 'Listing' | wc -l"
-          paquetes_actualizar=$(podman run --entrypoint "" $IMAGEN_DEST bash -c "$comando")
-          echo "Hay $paquetes_actualizar paquetes por actualizar de Debian"
-          if [ "$paquetes_actualizar" -gt 0 ]; then
-            echo "Actualizaciones disponibles en Debian. Hay que construir imagen"
-            echo "construir=true" >> $GITHUB_ENV
-          else
-            echo "No hay actualizaciones disponibles de Debian."
           fi
           
       - name: Checkout repositorio
