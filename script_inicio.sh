@@ -82,8 +82,12 @@ for DIR in $DIRECTORIES; do
         while true; do
             inotifywait -m -r -e modify,create,delete,move "$DIR" | 
             while read -r directory event filename; do
-                echo "Evento detectado: $event en $directory/$filename"
-                recargar_una_vez "$DIR" &
+                if [[ $filename == *.certbot.lock ]]; then
+                    echo "Fichero lock de CertBoot detectado, no se recarga configuración"
+                else
+                    echo "Evento detectado: $event en $directory$filename"
+                    recargar_una_vez "$DIR" &
+                fi
             done
         done
         ) &
