@@ -7,7 +7,7 @@ COPY script_inicio.sh /script_inicio.sh
 # For inotify, y se actualizan los paquetes
 RUN chmod +x /script_inicio.sh && \
     apt-get update && \
-    apt-get upgrade && \
+    apt-get -y upgrade && \
     apt-get install -y --no-install-recommends inotify-tools && \
     apt autoremove -y && \
     apt clean && \
