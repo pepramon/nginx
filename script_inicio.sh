@@ -74,7 +74,7 @@ fi
 declare -A PID_DIRS
 
 # Configurar vigilancia para los directorios especificados
-for DIR in $DIRECTORIES; do
+for DIR in $DIRECTORIOS; do
     if [ -d "$DIR" ]; then
         echo "Configurando vigilancia en: $DIR"
         (
