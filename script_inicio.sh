@@ -42,6 +42,19 @@ trap "salida_limpia" EXIT SIGINT SIGTERM
 # Este bloque asegura que el contenedor o script detenga los procesos internos de manera ordenada,
 # limpiando recursos y cerrando procesos secundarios como los vigilantes de directorios o Nginx.
 
+# Si se suministra un UID, se hace que Nginx se ejecute con ese usuario
+if [ -n "$UID" ]; then
+    usermod -u ${UID} nginx
+fi
+
+# Si se suministra un GID, se hace que Nginx se ejecute con ese grupo
+if [ -n "$GID" ]; then
+    groupmod -g ${UID} nginx
+fi
+
+# Se assegura que los permisos son los correctos en /var/cache
+chown -R nginx:nginx /var/cache/nginx
+
 
 # Se lanza nginx con sus parametros y se guarda el PID
 echo "Iniciando Nginx..."
