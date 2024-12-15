@@ -4,7 +4,7 @@ Esta imagen de Docker es una mejora del la imagen oficial de nginx para que haga
 
 Se ha añadido la opción de que vigile los cambios en los directorios definidos en la variable de entorno `$DIRECTORIOS` mediante `inofitywait`. Si ocurre algún cambio, se espera 10 minutos antes de recargar la configuración de nginx mediante `kill -HUP ${NGINX_PID}`.
 
-También se puede cambiar con que UID y GID trabaja Nginx mediante variables de entorno. Si no se definen, trabaja como en la imagen oficial. 
+También se puede cambiar con que `UID` (id de usuario) y `GID`(id de grupo) trabaja Nginx mediante variables de entorno. Si no se definen, trabaja como en la imagen oficial. 
 
 ## Como usar
 
