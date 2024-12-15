@@ -2,7 +2,9 @@
 
 Esta imagen de Docker es una mejora del la imagen oficial de nginx para que haga la vigilancia de directorios.
 
-Se ha añadido la opción de que vigile los cambios en los directorios definidos en la variable de entorno `$DIRECTORIOS` mediante `inofitywait`. Si ocurre algún cambio, se espera 10 minutos antes de recargar la configuración de nginx mediante `kill -HUP ${NGINX_PID}`. 
+Se ha añadido la opción de que vigile los cambios en los directorios definidos en la variable de entorno `$DIRECTORIOS` mediante `inofitywait`. Si ocurre algún cambio, se espera 10 minutos antes de recargar la configuración de nginx mediante `kill -HUP ${NGINX_PID}`.
+
+También se puede cambiar con que UID y GID trabaja Nginx mediante variables de entorno. Si no se definen, trabaja como en la imagen oficial. 
 
 ## Como usar
 
@@ -19,7 +21,10 @@ services :
       - ./conf.d:/etc/nginx/conf.d
     environment:
       # Ejemplo de vigilancia de 2 directorios
-      DIRECTORIOS=/etc/example /var/www
+      - DIRECTORIOS="/etc/example /var/www"
+      # Hacer que corra con UID 1000, GID 1000
+      - UID=1000
+      - GID=1000
 ```
 
 ### Mediante Docker run
@@ -27,7 +32,7 @@ services :
 Igual que en Docker Compose pero con un comando
 
 ```bash
-docker run -d -v ./conf.d:/etc/nginx/conf.d -e DIRECTORIOS="/etc/example /var/www"  pepramon/nginx
+docker run -d -v ./conf.d:/etc/nginx/conf.d -e DIRECTORIOS="/etc/example /var/www"  -e UID=1000 -e GID=1000 pepramon/nginx
 ```
 
 ## Soporte y colaboración
